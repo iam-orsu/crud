@@ -9,6 +9,25 @@ const getAuthHeaders = () => {
   };
 };
 
+// Helper to handle responses
+const handleResponse = async (res) => {
+  const text = await res.text();
+  
+  // Try to parse as JSON
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error('Server returned invalid response');
+  }
+  
+  if (!res.ok) {
+    throw new Error(data.error || `Request failed with status ${res.status}`);
+  }
+  
+  return data;
+};
+
 // Auth API
 export const authAPI = {
   signup: async (email, password) => {
@@ -17,9 +36,7 @@ export const authAPI = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Signup failed');
-    return data;
+    return handleResponse(res);
   },
 
   login: async (email, password) => {
@@ -28,9 +45,7 @@ export const authAPI = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Login failed');
-    return data;
+    return handleResponse(res);
   }
 };
 
@@ -40,9 +55,7 @@ export const todoAPI = {
     const res = await fetch(`${API_BASE}/todos`, {
       headers: getAuthHeaders()
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to fetch todos');
-    return data;
+    return handleResponse(res);
   },
 
   create: async (title) => {
@@ -51,9 +64,7 @@ export const todoAPI = {
       headers: getAuthHeaders(),
       body: JSON.stringify({ title })
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to create todo');
-    return data;
+    return handleResponse(res);
   },
 
   update: async (id, updates) => {
@@ -62,9 +73,7 @@ export const todoAPI = {
       headers: getAuthHeaders(),
       body: JSON.stringify(updates)
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to update todo');
-    return data;
+    return handleResponse(res);
   },
 
   delete: async (id) => {
@@ -72,8 +81,6 @@ export const todoAPI = {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to delete todo');
-    return data;
+    return handleResponse(res);
   }
 };
