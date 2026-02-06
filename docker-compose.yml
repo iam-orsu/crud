@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./backend
+    container_name: todo-backend
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - DB_PATH=/data/todo.db
+    volumes:
+      - todo-data:/data
+    restart: unless-stopped
+    networks:
+      - todo-network
+
+  frontend:
+    build: ./frontend
+    container_name: todo-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - todo-network
+
+volumes:
+  todo-data:
+
+networks:
+  todo-network:
+    driver: bridge
